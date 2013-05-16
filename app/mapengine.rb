@@ -16,6 +16,7 @@ class MapEngine
     if logger == nil
       @logger = Logging.getLogger("MapEngine")
       @logger.add_handler(Logging.ConsoleHandler)
+      @logger.add_handler(Logging.FileHandler("MapEngine"))
     else
       @logger = logger
     end
@@ -33,3 +34,5 @@ class MapEngine
     end
   end
 end
+
+MapEngine.new

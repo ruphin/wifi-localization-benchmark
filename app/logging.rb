@@ -73,10 +73,10 @@ module Logging
 
   def self.FileHandler(file_name)
     increment = 1
-    while (FileTest.exists?("#{file_name}.#{increment}.log"))
+    while (FileTest.exists?("log/#{file_name}.#{increment}.log"))
       increment += 1
     end
-    f = File.open("#{file_name}.#{increment}.log", 'w+')
+    f = File.open("log/#{file_name}.#{increment}.log", 'w+')
     handler = Handler.new { |message| f.puts(message) }
     handler.closer { f.close }
     handler.log_data = true
@@ -113,19 +113,20 @@ if __FILE__ == $0
 
     def test_filehandler
       increment = 1
-      while (FileTest.exists?("test.#{increment}.log"))
+      while (FileTest.exists?("log/test.#{increment}.log"))
         increment += 1
       end
       file_handler = Logging.FileHandler('test')
-      assert(FileTest.exists?("test.#{increment}.log"))
+      assert(FileTest.exists?("log/test.#{increment}.log"))
       file_handler.log_level = :debug
       file_handler.log_data = true
       file_handler.data(:flag, :second_flag, "testdata")
       file_handler.info("printing test data")
       file_handler.close
-      f = File.open("test.#{increment}.log", 'r')
+      f = File.open("log/test.#{increment}.log", 'r')
       assert_equal("DATA:flag:second_flag:testdata\n", f.gets)
       assert_equal("INFO: printing test data\n", f.gets)
+      File.delete("log/test.#{increment}.log")
     end
   end
 end
