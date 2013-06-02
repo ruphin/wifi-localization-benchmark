@@ -1,4 +1,7 @@
 module Logging
+
+  LEVELS = { debug: 1, info: 2, warn: 3 }
+
   @loggers = {}
 
   class Logger
@@ -23,17 +26,25 @@ module Logging
       end
     end
 
+    def warn(message)
+      @handlers.each do |handler|
+        handler.warn(message)
+      end
+    end
+
     def data(*tags, message)
       @handlers.each do |handler|
-        handler.data(tags, *message)
+        handler.data(*tags, message)
       end
     end
   end
 
   class Handler
 
-    def initialize(&proc)
+    def initialize(level, &proc)
+      @level = Logging::LEVELS[level]
       @output_method = proc
+      @tags = []
     end
 
     def closer(&proc)
@@ -45,47 +56,52 @@ module Logging
     end
 
     def log_level=(level)
-      @level = level
+      @level = Logging::LEVELS[level]
     end
 
     def log_data=(log_data)
       @data = log_data
     end
 
+    def add_tag(tag)
+      @tags.push(tag)
+    end
+
     def debug(message)
-      if @level == :debug
-        @output_method.call("DEBUG: #{message}")
+      if @level <= Logging::LEVELS[:debug]
+        @output_method.call("DBUG: #{message}")
       end
     end
 
     def info(message)  
-      if @level == :info || @level == :debug
+      if @level <= Logging::LEVELS[:info]
         @output_method.call("INFO: #{message}")
+      end
+    end
+
+    def warn(message)  
+      if @level <= Logging::LEVELS[:warn]
+        @output_method.call("WARN: #{message}")
       end
     end
 
     def data(*tags, message)
       if @data == true
-        @output_method.call("DATA:#{tags.join(":")}:#{message}")
+        @output_method.call("DATA:#{(@tags + tags).join(".")}:#{message}")
       end
     end
   end
 
-  def self.FileHandler(file_name)
-    increment = 1
-    while (FileTest.exists?("log/#{file_name}.#{increment}.log"))
-      increment += 1
-    end
-    f = File.open("log/#{file_name}.#{increment}.log", 'w+')
-    handler = Handler.new { |message| f.puts(message) }
+  def self.FileHandler(file_name, level=:warn, data=true)
+    f = File.open("log/#{file_name}.log", 'w+')
+    handler = Handler.new(level) { |message| f.puts("#{message}") }
     handler.closer { f.close }
-    handler.log_data = true
+    handler.log_data = data
     return handler
   end
 
   def self.ConsoleHandler(level=:debug, data=false)
-    handler = Handler.new { |message| puts message }
-    handler.log_level = level
+    handler = Handler.new(level) { |message| puts message }
     handler.log_data = data
     return handler
   end
@@ -97,6 +113,8 @@ module Logging
     return @loggers[name]
   end
 end
+
+# Unit testing
 
 if __FILE__ == $0
 
@@ -124,7 +142,7 @@ if __FILE__ == $0
       file_handler.info("printing test data")
       file_handler.close
       f = File.open("log/test.#{increment}.log", 'r')
-      assert_equal("DATA:flag:second_flag:testdata\n", f.gets)
+      assert_equal("DATA:flag.second_flag:testdata\n", f.gets)
       assert_equal("INFO: printing test data\n", f.gets)
       File.delete("log/test.#{increment}.log")
     end
