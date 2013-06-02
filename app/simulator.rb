@@ -4,7 +4,8 @@ require './logging.rb'
 require './mapengine.rb'
 require './fingerprinting.rb'
 require './centroid.rb'
-require 'tk'
+require 'optparse'
+#require 'tk'
 
 class Range
   def float_step(float)
@@ -153,35 +154,60 @@ class Simulator
   end
 end
 
-# MAP SIZE in meters
-MAP_SIZE = ARGV.shift.to_i
 
-# NODE DENSITY in nodes per hectare (10000m^2)
-NODE_DENSITY = ARGV.shift.to_i
+options = {}
 
-NODE_COUNT = MAP_SIZE**2 / 10000 * NODE_DENSITY
+OptionParser.new do |opts|
+  opts.banner = "Usage: simulator.rb [options]"
+
+  opts.on("-g", "--graph", "Render Graphs. Requires tk/tcl") do |g|
+    options[:graph] = g
+  end
+
+  opts.on(:REQUIRED, "-mMAPSIZE", "--mapsize=MAPSIZE", OptionParser::DecimalInteger, "Map size (300)" ) do |m|
+    options[:mapsize] = m
+  end
+
+  opts.on(:REQUIRED, "-dDENSITY", "--density=DENSITY", OptionParser::DecimalInteger, "Node density (15)" ) do |m|
+    options[:density] = m
+  end
+
+  opts.on(:REQUIRED, "-aACCURACY", "--accuracy=ACCURACY", OptionParser::DecimalInteger, "Test accuracy (100)" ) do |m|
+    options[:accuracy] = m
+  end
+
+  opts.on(:REQUIRED, "-iITERATIONS", "--iterations=ITERATIONS", OptionParser::DecimalInteger, "Test iterations (100)" ) do |m|
+    options[:iterations] = m
+  end
+
+end.parse!
+
+NODE_COUNT = options[:mapsize]**2 / 10000 * options[:density]
 
 null_logger = Logging::getLogger(:NULL)
 logger = Logging::getLogger(:console)
-logger.add_handler(Logging.FileHandler("DATA-#{MAP_SIZE}-#{NODE_DENSITY}", :info, false))
-sim = Simulator.new(MAP_SIZE, Random.new_seed, logger)
+logger.add_handler(Logging.FileHandler("DATA-#{options[:mapsize]}-#{options[:density]}-#{options[:accuracy]}-#{options[:iterations]}", :info, false))
+sim = Simulator.new(options[:mapsize], Random.new_seed, logger)
 sim.add_static_algorithm(Localization::Fingerprinting.new(null_logger))
 sim.add_static_algorithm(Localization::Centroid.new(null_logger))
 sim.add_learning_algorithm(Localization::Fingerprinting.new(null_logger))
 sim.add_learning_algorithm(Localization::Centroid.new(null_logger))
 
 sim.create_access_points(NODE_COUNT)
-sim.field_scan(MAP_SIZE/250.0)
+sim.field_scan(options[:mapsize]/(options[:accuracy]*2.5))
 
-(1..50).each do |step|
+(1..options[:iterations]).each do |step|
   p step
   logger.info("STEP:#{step}")
-  sim.change(NODE_COUNT/25)
   logger.info("ORIGINAL-APS:#{ sim.dump.map { |id, _, _| id }.select { |id| id < NODE_COUNT }.size }")
   logger.info("AP-SET:#{ sim.dump }")
-  sim.field_test((MAP_SIZE-150)/20.0)
+  sim.field_test((options[:mapsize]-150)/(options[:accuracy]/5.0))
   sim.errors
+  sim.change(2*(NODE_COUNT/options[:iterations]))
 end
 
-sim.draw
+if options[:graph]
+  require 'tk'
+  sim.draw
+end
 
