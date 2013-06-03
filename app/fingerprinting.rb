@@ -57,15 +57,12 @@ module Localization
     # Returns an estimated location based on the perceived signals
     def read(signals)
 
-      # Sort signals on ID
-      signals.sort!{ |a, b| a.first <=> b.first }
-
       id_set = (signals.map{|id, _| id}).to_set
 
       # Get an array with all relevant fingerprints for this set of IDs
       set_distance_map = relevant_fingerprint_array(id_set)
 
-      # Build a list of fingerprints with the closest match to the id_set, with minimum size 4
+      # Build a list of fingerprints with the closest match to the id_set, with minimum size of BEST_MATCHES
       searchable_fingerprints = []
       set_distance_map.each do |fingerprints|
         searchable_fingerprints.concat(fingerprints)

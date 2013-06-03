@@ -25,7 +25,6 @@ set style data linespoints
 set grid
  
 set xlabel 'Step'
-set xrange [1:30]
 set xtics 5
 set mxtics 5
  
@@ -98,6 +97,8 @@ logfiles.each do |filename|
     end
     File.open("#{filename}.gnuplot", 'w+') do |file|
       file.puts GNUPLOT_TEMPLATE
+
+      file.puts "set xrange [1:#{iterations}]"
       file.puts "set output '#{mapsize}-#{density}-#{accuracy}-#{iterations}.svg'"
 
       file.print "plot "
@@ -112,12 +113,10 @@ logfiles.each do |filename|
       end
       file.puts "e"
     end
-    `chmod 744 #{filename}.gnuplot`
   end
 end
 
 
 if options[:graph]
   require 'tk'
-
 end
