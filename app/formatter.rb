@@ -112,6 +112,7 @@ logfiles.each do |filename|
       end
       file.puts "e"
     end
+    `chmod 744 #{filename}.gnuplot`
   end
 end
 

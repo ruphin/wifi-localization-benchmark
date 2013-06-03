@@ -1,4 +1,6 @@
+*.svg
 *.log
 *.log.data
 *.log.gnuplot
 paper.md
+.DS_Store
