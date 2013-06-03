@@ -1,0 +1,231 @@
+% This is "bach-ref-2009.tex" Updated january 29th 2010.
+% This file should be compiled with "sig-alternate-fixed.cls" January 2010.
+% It is based on the ACM style "sig-alternate.cls"
+% -------------------------------------------------------------------------
+% This example file demonstrates the use of the 'sig-alternate-fixed.cls'
+% V2.5 LaTeX2e document class file. It is for those submitting
+% articles to the Twente Student Conference on IT. Both this file as the 
+% document class file are based upon ACM documents.
+%
+% ----------------------------------------------------------------------------------------------------------------
+% This .tex file (and associated .cls) produces:
+%       1) The Permission Statement
+%       2) The Conference (location) Info information
+%       3) The Copyright Line TSConIT
+%       4) NO page numbers
+%       5) NO headers and/or footers
+%
+%
+% Using 'sig-alternate.cls' you have control, however, from within
+% the source .tex file, over both the CopyrightYear
+% (defaulted to 200X) and the ACM Copyright Data
+% (defaulted to X-XXXXX-XX-X/XX/XX).
+% e.g.
+% \CopyrightYear{2007} will cause 2007 to appear in the copyright line.
+% \crdata{0-12345-67-8/90/12} will cause 0-12345-67-8/90/12 to appear in the copyright line.
+%
+% ---------------------------------------------------------------------------------------------------------------
+% This .tex source is an example which *does* use
+% the .bib file (from which the .bbl file % is produced).
+% REMEMBER HOWEVER: After having produced the .bbl file,
+% and prior to final submission, you *NEED* to 'insert'
+% your .bbl file into your source .tex file so as to provide
+% ONE 'self-contained' source file.
+%
+
+% refers to the cls file being used
+\documentclass{sig-alternate-br}
+
+\begin{document}
+%
+% --- Author Metadata here --- DO NOT REMOVE OR CHANGE 
+\conferenceinfo{19$^{th}$ Twente Student Conference on IT}{June 24$^{th}$, 2013, Enschede, The Netherlands.}
+\CopyrightYear{2013} % Allows default copyright year (200X) to be over-ridden - IF NEED BE.
+%\crdata{0-12345-67-8/90/01}  % Allows default copyright data (0-89791-88-6/97/05) to be over-ridden - IF NEED BE.
+% --- End of Author Metadata ---
+
+\title{Self-Regeneration for Radio Maps in Wi-Fi Localization}
+% In Bachelor Referaat at University of Twente the use of a subtitle is discouraged.
+% \subtitle{[Instructions]}
+
+%
+% You need the command \numberofauthors to handle the 'placement
+% and alignment' of the authors beneath the title.
+%
+% For aesthetic reasons, we recommend 'three authors at a time'
+% i.e. three 'name/affiliation blocks' be placed beneath the title.
+%
+% NOTE: You are NOT restricted in how many 'rows' of
+% "name/affiliations" may appear. We just ask that you restrict
+% the number of 'columns' to three.
+%
+% Because of the available 'opening page real-estate'
+% we ask you to refrain from putting more than six authors
+% (two rows with three columns) beneath the article title.
+% More than six makes the first-page appear very cluttered indeed.
+%
+% Use the \alignauthor commands to handle the names
+% and affiliations for an 'aesthetic maximum' of six authors.
+% Add names, affiliations, addresses for
+% the seventh etc. author(s) as the argument for the
+% \additionalauthors command.
+% These 'additional authors' will be output/set for you
+% without further effort on your part as the last section in
+% the body of your article BEFORE References or any Appendices.
+
+\numberofauthors{1} %  in this sample file, there are a *total*
+% of EIGHT authors. SIX appear on the 'first-page' (for formatting
+% reasons) and the remaining two appear in the \additionalauthors section.
+%
+\author{
+% You can go ahead and credit any number of authors here,
+% e.g. one 'row of three' or two rows (consisting of one row of three
+% and a second row of one, two or three).
+%
+% The command \alignauthor (no curly braces needed) should
+% precede each author name, affiliation/snail-mail address and
+% e-mail address. Additionally, tag each line of
+% affiliation/address with \affaddr, and tag the
+% e-mail address with \email.
+%
+% 1st. author
+\alignauthor
+Goffert van Gool\\
+       \affaddr{University of Twente}\\
+       \affaddr{P.O. Box 217, 7500AE Enschede}\\
+       \affaddr{The Netherlands}\\
+       \email{g.g.vangool@student.utwente.nl}
+}
+% There's nothing stopping you putting the seventh, eighth, etc.
+% author on the opening page (as the 'third row') but we ask,
+% for aesthetic reasons that you place these 'additional authors'
+% in the \additional authors block, viz.
+\additionalauthors{Additional authors: John Smith (The
+Th{\o}rv{\"a}ld Group, email: {\texttt{jsmith@affiliation.org}})
+and Julius P.~Kumquat (The Kumquat Consortium, email:
+{\texttt{jpkumquat@consortium.net}}).}
+\date{30 July 1999}
+% Just remember to make sure that the TOTAL number of authors
+% is the number that will appear on the first page PLUS the
+% number that will appear in the \additionalauthors section.
+
+\maketitle
+\begin{abstract}
+Current Wi-Fi based localization systems rely on manual data collection for both creation and maintenance of the map. Periodical war driving is commonly used by commercial localization systems, offering localization services to clients. In this work, we explore different methods to use the data acquired from client requests to detect changes to the environment and update the map. Updating the map with this additional data could reduce the required frequency of manual map regeneration. Focusing on the two main classes of algorithms most commonly used in current Wi-Fi based localization systems, we develop and compare regeneration techniques.
+\end{abstract}
+
+% A category with the (minimum) three required fields (NOT USED in Bachelor Referaat)
+% \category{H.4}{Information Systems Applications}{Miscellaneous}
+%A category including the fourth, optional field follows...
+% \category{D.2.8}{Software Engineering}{Metrics}[complexity
+% measures, performance measures]
+
+\keywords{Metropolitan-scale Wi-Fi Localization, Radio Maps, War Driving, Radio Map Regeneration}
+
+\section{Introduction}
+Current Wi-Fi based positioning algorithms depend on an initial \textit{training phase}. In the training phase a training \textit{data set} is constructed by moving through an area with a Wi-Fi device and an external localization system such as a GPS device. The Wi-Fi device periodically scans nearby wireless networks, and combines this data with the location provided by the localization system. Thus, a training data set is created containing a sequence of \textit{measurements}: each measurement contains a location coordinate and a Wi-Fi scan composed of a series of MAC addresses of the detected access points and their perceived signal strength.
+
+Once the training phase is completed, the training data is used to build a \textit{radio map}. The nature of this map depends on the positioning algorithm used. With this map, a user can position himself by performing a Wi-Fi scan, and comparing the results against the radio map. This is called the \textit{positioning phase} \cite{cheng:metropolitan-scale}.
+
+\subsection{Positioning Algorithms}
+In this section, we present an overview of the two main classes of Wi-Fi based positioning algorithms we will use in our research. 
+
+\vspace{10 mm}
+
+\subsubsection{Centroid}
+The centroid class of positioning algorithms is based on combining the training data for each single access point and estimating the geographic location for these access points based on the positions reported in all of the measurements. Thus, the radio map for this algorithm consists of one record per access point containing the estimated position of that AP \cite{tsui:war-walking}. 
+
+\subsubsection{Fingerprinting}
+The fingerprinting class of algorithms is based on an indoor positioning mechanism proposed in RADAR \cite{bahl:radar}. The hypothesis behind RADAR is as follows: each position has a unique set of visible access points with certain signal strengths; this set of APs and their respective signal strengths represents a \textit{fingerprint} unique to that position. Thus, the radio map for this algorithm consists of a list of measurements, containing a location coordinate and a series of access points and their respective signal strengths at this coordinate. 
+
+\subsection{Problem Statement}
+All major outdoor Wi-Fi positioning systems rely on an external environment of wireless networks. This environment is subject to constant change, caused by factors such as relocating individuals in residential areas, or hardware upgrades in industrial or commercial areas. New access points may be deployed while existing access points are decommissioned. We refer to this as \textit{access point turnover}, defined as the percentage of currently deployed access points that are not present in the training data set.
+
+To remain accurate, any localization system needs to account for access point turnover in the environment. Most current systems rely on periodical war driving or war walking to regenerate the radio map. A system designed to reduce the need to manually update the radio map could lead to a reduction in maintenance costs.
+
+During the positioning phase, additional data from Wi-Fi scans can be collected from users. Unlike the measurements from the training phase, this data does not contain a location coordinate from an external localization system. However, a location estimate can be obtained from the radio map using a localization algorithm. By combining these location estimates with the Wi-Fi data the system could collect new information about the environment. This information can then be used to adapt the radio map to changes in the environment. 
+
+We define \textit{access point turnover time} as the time it takes for a newly created radio map to reach an access point turnover state of 50 percent. With a relatively short turnover time, more data collected from users is required to adapt to the environment. We define the \textit{access point turnover efficiency} of an algorithm as the localization accuracy over time, expressed as a percentage of the initial accuracy obtained when the radio map was current. We expect the turnover efficiency of a localization algorithm using regeneration techniques to increase as the amount of user data over turnover time increases.
+
+
+\subsection{Research Questions}
+Based on the problem statement, the proposed research addresses the following research questions:
+\begin{enumerate}
+\item 
+Can regeneration techniques for centroid based algorithms be used to increase turnover efficiency?
+\item
+Can regeneration techniques for fingerprinting based algorithms be used to increase turnover efficiency?
+\item
+Does a significant performance difference exist between centroid based and fingerprinting based regeneration techniques?
+\end{enumerate}
+
+\section{Related Work}
+Localization using Wi-Fi signals has been an active area of research since the idea was first published by Bahl and Padmanabhan \cite{bahl:radar} in 2000. They used Wi-Fi \textit{fingerprints} previously collected at known locations inside a building to identify the location of a device. All early research in this area relies on known positions of access points, usually proprietary hardware set up specifically to support localization. Intel Place Lab \cite{cheng:metropolitan-scale} is one of the first systems designed to use public access points in large urban environments, demonstrating the viablity of Wi-Fi localization in geographical areas where conventional localization systems fail. Access point turnover is mentioned in Place Lab as a factor of minor influence on the accuracy of most localization algorithms. However, no attempts have been made to use the effects of turnover to increase the accuracy of the map.
+
+Various alterations and improvements on the original algorithms outlined in Place Lab have been found by different researchers. 
+
+Tsui et al. \cite{tsui:war-walking} proposed war-walking as an alternative to war-driving. The accuracy of localization could be increased with measurements taken while walking instead of driving, at the cost of increased time required to map large areas.
+
+The leading commercial provider of Wi-Fi localization services, Skyhook Wireless, claims to use technology that uses client data to update their maps \cite{skyhook:self-healing}. However, no research docuemts on this subject have been released.
+
+
+\section{Research Method}
+In this section we provide a description of the proposed research methods. 
+
+The collection of a data set covering different states of access point turnover is outside the scope of our research, due to timeframe limitations. Hence, we will use simulation techniques on generated data sets to test our algorithms. For the generation of these data sets we will use metrics found and described in prior research, in particular the data collected by Tsui et al. \cite{tsui:war-walking}, as their data set is the largest found in any study.
+
+We will create simulation software to be able to test different regeneration techniques for each localization algorithm against controlled variables. It is our goal to find an effective regeneration technique for each class of algorithms that is currently being used in production environments. The performance of these techniques will be determined by comparing turnover efficiency of unaltered localization algorithms, and versions that we optimized using regeneration techniques. We will test the weighted-centroid algorithm used in Intel Place Lab \cite{cheng:metropolitan-scale}, and several fingerprinting algorithms from existing research \cite{cheng:metropolitan-scale,tsui:war-walking}.
+
+Several techniques have since been developed to increase the accuracy of these positioning algorithms, such as particle filtering \cite{hightower:particle-filter}. In our research we will not apply particle filtering or other post-processing optimizations that are intended to minimize positional error. Since the goal of this study is to identify the effect of radio map regeneration techniques positional accuracy, we will omit other optimization techniques in order to isolate the effect of map regeneration on accuracy.
+
+\section{Simulation Tool}
+We have built a Wi-Fi localization simulation software toolkit in order to run the required tests to answer our research questions. This toolkit consists of three separate elements; A map engine capable of simulating an urban area containing Wi-Fi access points, a set of localization algorithms, and a testing engine capable of running pre-defined tests.  In this section we describe each of these elements and their properties.
+
+\subsection{Map Engine}
+The map engine consists of an area of predefined size, and a collection of Wi-Fi access points within this area. It allows Wi-Fi access measurements to be taken at any point on the map, returning the unique identifier and signal strength of each access point within the vincinity of the measurement location. These signal strengths are simulated according to measured behaviours of access points in urban environments. When taking a measurement, the response rate of each access point depends on the distance of the access point to the point of measurement. The response rate used by this simulation is an approximation of the Response rate data from Chen et al. \cite{cheng:metropolitan-scale}. If the signal is detected, a signal strength is determined based on a log-distance path loss model. The variables used in this model are adapted to match the data from Chen et al., resulting in signal strengths varying from -65dBm for nearby signals to -85dBm for signals at maximum distance. In real environments, the perceived signal strengths vary between different readings, even when stationary. Kaemarungsi et al. determined that these signal strengths are distributed according to a normal distribution, with a standard deviation relative to the average signal strength. To simulate this, the exact signal strength returned by the map engine is randomized with a gaussian random distribution, similar to the data collected by Kaemarungsi et al.
+
+\subsection{Localization algorithms}
+We have implemented two different localization algorithms. The basic centroid algorithm is exactly as described in Intel Place Lab \cite{cheng:metropolitan-scale}. The fingerprinting algorithm 
+
+\section{Research Schedule}
+The research schedule for this paper is given in Table 1.
+
+
+\begin{table}
+\centering \caption{Research Schedule}
+\begin{tabular}{|l|p{6cm}|} \hline
+\textbf{Deadline} & \textbf{Task/Deliverable}\\ \hline
+14-04&Build a simulation environment suited for testing localization algorithms\\ \hline
+28-04&Develop regeneration techniques for centroid and fingerprinting based algorithms\\ \hline
+05-05&Prepare simulation experiments\\ \hline 
+13-05&Test the developed regeneration techniques and answer the research questions\\ \hline
+20-05&First draft paper\\ \hline 
+27-05&Second draft paper\\ \hline 
+03-06&Final camera-ready paper\\ \hline
+24-06&Presentation\\ \hline
+\end{tabular}
+\end{table}
+
+% The following two commands are all you need in the
+% initial runs of your .tex file to
+% produce the bibliography for the citations in your paper.
+
+\vspace{40 mm}
+
+\bibliographystyle{abbrv}
+\bibliography{bachrefproposal}  % sigproc.bib is the name of the Bibliography in this case
+% You must have a proper ".bib" file
+%  and remember to run:
+% latex bibtex latex latex
+% to resolve all references
+%
+% ACM needs 'a single self-contained file'!
+%
+%APPENDICES are optional
+
+%\balancecolumns % GM June 2007
+% That's all folks!
+
+
+\balancecolumns
+\end{document}
