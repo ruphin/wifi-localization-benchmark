@@ -122,7 +122,6 @@ class Simulator
     @static_algorithms.each do |a|
       @logger.info("Error for #{a.class.name}: #{a.cumulative_error}")
       @logger.info("Misses for #{a.class.name}: #{a.localization_misses}")
-
     end
 
     @learning_algorithms.each do |a|

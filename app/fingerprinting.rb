@@ -1,7 +1,6 @@
 require './logging.rb'
 require './mapengine.rb'
 require 'set'
-require 'benchmark'
 
 module Localization
   class Fingerprinting
