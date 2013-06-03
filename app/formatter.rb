@@ -119,5 +119,4 @@ end
 
 if options[:graph]
   require 'tk'
-
 end
