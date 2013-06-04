@@ -36,11 +36,11 @@ class Simulator
     end
 
     # We don't make any measurements at the border perimeter of the map to make sure every measurement has potential access points in all directions
-    measurement_border = 75
-    if measurement_border * 2 > mapsize
+    @measurement_border = 75
+    if @measurement_border * 2 > @mapsize
       @logger.warn("Testing area too small. Increase mapsize to get results.")
     end
-    @test_area = measurement_border..(mapsize - measurement_border).to_f
+    @test_area = @measurement_border..(@mapsize - @measurement_border).to_f
     @map = Engine::Map.new(@mapsize, @mapsize, random_seed , @logger)
   end
 
@@ -62,8 +62,9 @@ class Simulator
     @learning_algorithms.push algorithm
   end
 
-  # distance in meters between each individual measurements
-  def field_scan(distance)
+  # Accuracy in number of coordinates scanned per map dimension
+  def field_scan(accuracy)
+    distance = (@mapsize - @measurement_border) / accuracy.to_f
     @test_area.float_step(distance) do |x|
       @test_area.float_step(distance) do |y|
         signals = @map.read(x,y)
@@ -81,7 +82,9 @@ class Simulator
     end
   end
 
-  def field_test(distance)
+  # Accuracy in number of coordinates tested per map dimension
+  def field_test(accuracy)
+    distance = (@mapsize - @measurement_border) / accuracy.to_f
     locations = []
     @test_area.float_step(distance) do |x|
       @test_area.float_step(distance) do |y|
@@ -193,14 +196,14 @@ sim.add_learning_algorithm(Localization::Fingerprinting.new(null_logger))
 sim.add_learning_algorithm(Localization::Centroid.new(null_logger))
 
 sim.create_access_points(NODE_COUNT)
-sim.field_scan(options[:mapsize]/(options[:accuracy]*2.5))
+sim.field_scan(options[:accuracy]*2.5)
 
 (1..options[:iterations]).each do |step|
   p step
   logger.info("STEP:#{step}")
   logger.info("ORIGINAL-APS:#{ sim.dump.map { |id, _, _| id }.select { |id| id < NODE_COUNT }.size }")
   logger.info("AP-SET:#{ sim.dump }")
-  sim.field_test((options[:mapsize]-150)/(options[:accuracy]/5.0))
+  sim.field_test(options[:accuracy]/5.0)
   sim.errors
   sim.change(2*(NODE_COUNT/options[:iterations]))
 end

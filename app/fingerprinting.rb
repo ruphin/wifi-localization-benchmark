@@ -6,7 +6,7 @@ module Localization
   class Fingerprinting
 
     # The number of matches to average for a final result
-    BEST_MATCHES = 10
+    BEST_MATCHES = 4
 
     # The minimum number of matching signals to consider a fingerprint as a possible match
     MINIMUM_SIGNAL_MATCHES = 1

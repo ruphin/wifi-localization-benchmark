@@ -149,7 +149,7 @@ We define \textit{access point turnover time} as the time it takes for a newly c
 
 
 \subsection{Research Questions}
-Based on the problem statement, the proposed research addresses the following research questions:
+Based on the problem statement, this research addresses the following research questions:
 \begin{enumerate}
 \item 
 Can regeneration techniques for centroid based algorithms be used to increase turnover efficiency?
@@ -179,41 +179,66 @@ We will create simulation software to be able to test different regeneration tec
 Several techniques have since been developed to increase the accuracy of these positioning algorithms, such as particle filtering \cite{hightower:particle-filter}. In our research we will not apply particle filtering or other post-processing optimizations that are intended to minimize positional error. Since the goal of this study is to identify the effect of radio map regeneration techniques positional accuracy, we will omit other optimization techniques in order to isolate the effect of map regeneration on accuracy.
 
 \section{Simulation Tool}
-We have built a Wi-Fi localization simulation software toolkit in order to run the required tests to answer our research questions. This toolkit consists of three separate elements; A map engine capable of simulating an urban area containing Wi-Fi access points, a set of localization algorithms, and a testing engine capable of running pre-defined tests.  In this section we describe each of these elements and their properties.
+We have built a Wi-Fi localization simulation software toolkit in order to run the required tests to answer our research questions. This toolkit consists of three separate elements; A map engine capable of simulating an urban area containing Wi-Fi access points, a set of localization algorithms, and a testing engine capable of running pre-defined tests.  In this section we describe each of these elements and their properties. The tool is released as an open source project, and can be found at https://github.com/ruphin/wifi-localization-benchmark
 
 \subsection{Map Engine}
 The map engine consists of an area of predefined size, and a collection of Wi-Fi access points within this area. It allows Wi-Fi access measurements to be taken at any point on the map, returning the unique identifier and signal strength of each access point within the vincinity of the measurement location. These signal strengths are simulated according to measured behaviours of access points in urban environments. When taking a measurement, the response rate of each access point depends on the distance of the access point to the point of measurement. The response rate used by this simulation is an approximation of the Response rate data from Chen et al. \cite{cheng:metropolitan-scale}. If the signal is detected, a signal strength is determined based on a log-distance path loss model. The variables used in this model are adapted to match the data from Chen et al., resulting in signal strengths varying from -65dBm for nearby signals to -85dBm for signals at maximum distance. In real environments, the perceived signal strengths vary between different readings, even when stationary. Kaemarungsi et al. determined that these signal strengths are distributed according to a normal distribution, with a standard deviation relative to the average signal strength. To simulate this, the exact signal strength returned by the map engine is randomized with a gaussian random distribution, similar to the data collected by Kaemarungsi et al.
 
-\subsection{Localization algorithms}
-We have implemented two different localization algorithms. The basic centroid algorithm is exactly as described in Intel Place Lab \cite{cheng:metropolitan-scale}. The fingerprinting algorithm 
+\subsection{Localization Algorithms}
+We have implemented two different localization algorithms. The basic centroid and fingerprinting algorithms are exactly as described in Intel Place Lab \cite{cheng:metropolitan-scale}. In addition to these, we have implemented a learning version of each algorithm. The difference is that these learning versions add all measurements taken to their map. For measurements with an unknown location, the location is set as the best guess that the algorithm provides based on the existing map.
 
-\section{Research Schedule}
-The research schedule for this paper is given in Table 1.
+\subsection{Testing Engine}
+We have implemented a testing engine capable of running simulations using the map engine and a set of localization algorithms. The testing engine accepts four input variables: \textit{Map Size}, the length and height of the map area being simulated in meters; \textit{Density}, the density of access points on the map in access points per 100m$^2$; \textit{Iterations}, the amount of map change iterations to process; and \textit{Accuracy}, the amount of measurements per map change. The following testing procedure is then executed. First, a map engine is created with the given \textit{Map Size}, and access points are randomly placed on the map until the required \textit{Density} is achieved. Then all localization algorithms are loaded and passed through a \textit{training phase}. In this training phase measurements are taken at evenly spaced coordinates covering the entire map area. All localization algorithms receive the same set of measurements, and the locations at which they are taken. The number of measurements determined by the \textit{accuracy}. After the training phase is completed, the algorithms are passed through a number of \textit{positioning phases}, determined by the \textit{Iteration} count. Between these positioning phases, a certain percentage of access points on the map is replaced by new and unknown access points. The localization algorithms have no way to identify the location of these access points, as they receive no more location data for any measurement taken during the positioning phases. During these positioning phases measurements are taken at evenly spaced coordinates, the total number of measurements is again determined by the \textit{accuracy}. The resulting locations returned by each algorithm are compared to the actual location of the measurement, and the positioning error is totalled for each algorithm.
+
+\section{Test Results}
+
+In this section we describe the results obtained from our simulation tool. We compare the different algorithms (Centroid, Learning Centroid, Fingerprinting, and Learning Fingerprinting) by looking at the following performance characteristics: The average positioning error during each \textit{positiong phase}, and the percentage of localization attempts where the algorithms fail to produce a location estimate. Simulations are completed with different input variables, to test their effects on the results. The size of the map needs to be large enough so a single access point cannot covers the entire area. We have chosen to use a map height and width of 500m, which is more than sufficient in this regard. We have run tests with densities between 5 and 20, which produces between 500 and 2000 access points per square kilometer. Jones et al. [6] have determined that most urban environments fall within this range. Iterations and accuracy are set to produce a balance between accuracy of results and computation time. For our tests chose to use 30 iterations, which provides us enough data points to perform a meaningful comparison. Most of our tests we used an accuracy of 80, resulting in a test duration of about 2-3 hours on modern hardware. We have completed some tests with an accuracy of 100, which took about 8 hours to complete on the same hardware.
+
+\subsection{Positioning Error}
+When measuring the Positioning Error, we notice the following results. First, the positioning error increases for all algorithms when the number of known access points decreases. This is expected behaviour, as every algorithm produces better results with more measurement data. Second, the positioning error for every algorithm and it's learning variant is very similar at early positioning phases, and diverges at a later stage. This is also expected, as the learning algorithms start to functionally differ from the non-learning variants the more measurements are taken. Finally, we notice that while the learning fingerprinting algorithm produces different results from it's non-learning counterpart, both learning and non-learning centroid algorithms produce very similar results. We cannot determine a reason for this effect. Our conjecture is that the fingerprinting algorithm has more advanced matching mechanics, allowing it to effectively select useful measurements that improve on it's map. It is also possible that because the Centroid class algorithms suffer less effects from access point turnover, a learning mechanism is naturally less effective in improving results in those environments.
+
+A graph displaying data for one of our high accuracy tests is given in figure 1. Most tests follow the patterns visible in this graph.
+
+\begin{figure}
+\centering 
+\epsfig{file=acc.pdf} 
+\caption{Mapsize=500, Density=15, Iterations=30, Accuracy=100}
+\label{fig:abc} %always place your label after your caption!
+\end{figure}
 
 
-\begin{table}
-\centering \caption{Research Schedule}
-\begin{tabular}{|l|p{6cm}|} \hline
-\textbf{Deadline} & \textbf{Task/Deliverable}\\ \hline
-14-04&Build a simulation environment suited for testing localization algorithms\\ \hline
-28-04&Develop regeneration techniques for centroid and fingerprinting based algorithms\\ \hline
-05-05&Prepare simulation experiments\\ \hline 
-13-05&Test the developed regeneration techniques and answer the research questions\\ \hline
-20-05&First draft paper\\ \hline 
-27-05&Second draft paper\\ \hline 
-03-06&Final camera-ready paper\\ \hline
-24-06&Presentation\\ \hline
-\end{tabular}
-\end{table}
+\subsection{Localization Misses}
+When measuring the amount of Localization Misses produced by the tested algorithms, we notice a significant difference. Firstly, the non-learning algorithms start producing a significant amount of localization misses when only 20 percent of known access points remain. This result is expected, as the non-learning algorithms rely completely on the visibility of these access points, since they cannot incorporate other access points into their map. When too few access points remain, some areas of the map are no longer covered by any known access points, resulting in any measurement in those areas returning no known signals. The learning algorithms however do not suffer from this problem, as new access points are introduced into their system when old ones are removed. The exact location of these access points remains unknown, since the measurements during a positioning phase that detect new access points do not have accurate location data. We would suspect that these new access points introduce increased error into the system, as their location is based on an estimate with possible error. However, our positioning error data shows that the learning algorithms do not suffer a visible loss of accuracy when using these new nodes to provide localization. This means that the reduction in localization misses essentially does not come at the price of reduced accuracy.
+
+A graph displaying data for one of our high accuracy tests is given in figure 2. Most tests follow the patterns visible in this graph.
+
+
+\begin{figure}
+\centering 
+\epsfig{file=err.pdf} 
+\caption{Mapsize=500, Density=15, Iterations=30, Accuracy=100}
+\label{fig:abc} %always place your label after your caption!
+\end{figure}
+
+\section{Conclusion}
+
+In our test results, we have found sufficient evidence that basic Fingerprinting and Centroid based localization algorithms can be inproved using map regeneration techniques. Even when pressured by significant changes in the environment where less than 20 percent of the original access points remain, both Fingerprinting and Localization based algorithms with map regeneration produce significantly less localization misses, at no accuracy cost. The effectiveness of these techniques is most apparent in the Fingerprinting class of algorithms, where map regeneration provides a measurable inrcrease in accuracy in addition to a reduction in localization misses.
+
+
+
+
+
 
 % The following two commands are all you need in the
 % initial runs of your .tex file to
 % produce the bibliography for the citations in your paper.
 
-\vspace{40 mm}
+\vspace{120 mm}
 
 \bibliographystyle{abbrv}
-\bibliography{bachrefproposal}  % sigproc.bib is the name of the Bibliography in this case
+\bibliography{bachrefproposal}  
+[6] (https://smartech.gatech.edu/bitstream/handle/1853/13177/git-cercs-06-10.pdf)
+% sigproc.bib is the name of the Bibliography in this case
 % You must have a proper ".bib" file
 %  and remember to run:
 % latex bibtex latex latex
