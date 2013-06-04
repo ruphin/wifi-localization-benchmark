@@ -20,21 +20,17 @@ GNUPLOT_TEMPLATE = <<-eos
 set datafile separator ";"
  
 #output
-set key top center
+set key top left
 set style data linespoints
 set grid
- 
-set xlabel 'Step'
-set xtics 5
-set mxtics 5
 
 set ytics nomirror
  
-set y2label 'Access Points Remaining'
-set y2tics 10
-set autoscale y2
-set y2range [0:100]
-set format y2 "%g%%"
+set xlabel 'Access Points Remaining'
+set xtics 10
+set autoscale x
+set xrange [100:10]
+set format x "%g%%"
 
 set term svg size 600,400 font "Arial,10"
 
@@ -114,30 +110,21 @@ logfiles.each do |filename|
     File.open("#{filename}.accuracy.gnuplot", 'w+') do |file|
       file.puts GNUPLOT_TEMPLATE
 
-      file.puts "set xrange [1:#{iterations}]"
       file.puts "set output 'image/#{mapsize}-#{density}-#{accuracy}-#{iterations}-accuracy.svg'"
-
 
       file.puts "set ylabel 'Average Localization Error'"
       file.puts "set ytics 5"
       file.puts "set yrange [10:#{average_error.flatten.max + 5}]"
+      file.puts "set format y '%g '"
 
       file.print "plot "
-      algorithms.each do |a|
-        file.puts "'-' using 1:($2) title '#{a}' axes x1y1 lt rgb 'black', \\"
-      end
-      file.puts "'-' using 1:($2*100) title 'Remaining Access Points' axes x1y2 lt rgb 'black'"
-      file.puts average_error.zip( Array.new(average_error.size) { |x| x+1 }).map { |a, b| a.map { |c| "#{b};#{c}" }}.transpose.map { |a| a.join("\n")}.join("\ne\n")
-      file.puts "e"
-      dataset.map { |e| e[:originalaps]/original_aps }.each_with_index do |d, s|
-        file.puts "#{s+1};#{d}"
-      end
+      file.puts algorithms.map { |a| " '-' using 1:($2) title '#{a}' axes x1y1 lt rgb 'black'" }.join(",")
+      file.puts average_error.zip( dataset.map { |e| e[:originalaps]/original_aps * 100 }).map { |a, b| a.map { |c| "#{b};#{c}" }}.transpose.map { |a| a.join("\n")}.join("\ne\n")
       file.puts "e"
     end
     File.open("#{filename}.misses.gnuplot", 'w+') do |file|
       file.puts GNUPLOT_TEMPLATE
 
-      file.puts "set xrange [1:#{iterations}]"
       file.puts "set output 'image/#{mapsize}-#{density}-#{accuracy}-#{iterations}-error.svg'"
 
 
@@ -148,16 +135,9 @@ logfiles.each do |filename|
       file.puts "set format y '%g%%'"
 
 
-      file.print "plot "
-      algorithms.each do |a|
-        file.puts "'-' using 1:($2*100) title '#{a}' axes x1y1 lt rgb 'black', \\"
-      end
-      file.puts "'-' using 1:($2*100) title 'Remaining Access Points' axes x1y2 lt rgb 'black'"
-      file.puts percentage_misses.zip( Array.new(percentage_misses.size) { |x| x+1 }).map { |a, b| a.map { |c| "#{b};#{c}" }}.transpose.map { |a| a.join("\n")}.join("\ne\n")
-      file.puts "e"
-      dataset.map { |e| e[:originalaps]/original_aps }.each_with_index do |d, s|
-        file.puts "#{s+1};#{d}"
-      end
+      file.print "plot"
+      file.puts algorithms.map { |a| " '-' using 1:($2*100) title '#{a}' axes x1y1 lt rgb 'black'" }.join(",")
+      file.puts percentage_misses.zip( dataset.map { |e| e[:originalaps]/original_aps * 100 }).map { |a, b| a.map { |c| "#{b};#{c}" }}.transpose.map { |a| a.join("\n")}.join("\ne\n")
       file.puts "e"
     end
   end
