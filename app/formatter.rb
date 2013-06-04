@@ -131,7 +131,7 @@ logfiles.each do |filename|
       file.puts "set ylabel 'Localization Miss Percentage'"
       file.puts "set ytics 10"
       file.puts "set autoscale y"
-      file.puts "set yrange [#{average_error.flatten.min}:#{percentage_misses.flatten.max * 100 + 5}]"
+      file.puts "set yrange [0:#{percentage_misses.flatten.max * 100 + 5}]"
       file.puts "set format y '%g%%'"
 
 
