@@ -1,4 +1,4 @@
-*.svg
+*.old
 *.log
 *.log.data
 *.gnuplot
