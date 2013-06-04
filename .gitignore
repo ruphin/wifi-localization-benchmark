@@ -1,5 +1,5 @@
 *.svg
 *.log
 *.log.data
-*.log.gnuplot
-*.DS_Store
+*.gnuplot
+.DS_Store

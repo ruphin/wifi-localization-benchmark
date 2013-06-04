@@ -27,11 +27,8 @@ set grid
 set xlabel 'Step'
 set xtics 5
 set mxtics 5
- 
-set ylabel 'Measured Error'
+
 set ytics nomirror
-set ytics 5
-set yrange [10:50]
  
 set y2label 'Access Points Remaining'
 set y2tics 10
@@ -69,13 +66,31 @@ logfiles.each do |filename|
       elsif (data = (APSET.match line))
         dataset[step][:apset] = eval(data.captures.first)
       elsif (data = (ERROR.match line))
-        dataset[step][:error].push [data.captures.first, data.captures.last.to_f]
+        if data.captures.first == "Centroid"
+          dataset[step][:error][0] = [data.captures.first, data.captures.last.to_f]
+        else
+          dataset[step][:error][2] = [data.captures.first, data.captures.last.to_f]
+        end
       elsif (data = (LEARNINGERROR.match line))
-        dataset[step][:error].push ["Learning " + data.captures.first, data.captures.last.to_f]
+        if data.captures.first == "Centroid"
+          dataset[step][:error][1] = ["Learning " + data.captures.first, data.captures.last.to_f]
+        else
+          dataset[step][:error][3] = ["Learning " + data.captures.first, data.captures.last.to_f]
+        end
+
       elsif (data = (MISSES.match line))
-        dataset[step][:misses].push [data.captures.first, data.captures.last.to_f]
+        if data.captures.first == "Centroid"
+          dataset[step][:misses][0] = [data.captures.first, data.captures.last.to_f]
+        else
+          dataset[step][:misses][2] = [data.captures.first, data.captures.last.to_f]
+        end
+
       elsif (data = (LEARNINGMISSES.match line))
-        dataset[step][:misses].push ["Learning " + data.captures.first, data.captures.last.to_f]
+        if data.captures.first == "Centroid"
+          dataset[step][:misses][1] = ["Learning " + data.captures.first, data.captures.last.to_f]
+        else
+          dataset[step][:misses][3] = ["Learning " + data.captures.first, data.captures.last.to_f]
+        end
       end
     end
 
@@ -86,6 +101,7 @@ logfiles.each do |filename|
     misses = dataset.map { |d| d[:misses].map(&:last) }
     misses = misses.zip( [Array.new(misses.first.size, 0)] + misses).map { |a, b| a.zip(b).map { |c, d| c - d }}
     average_error = errors.zip(misses).map { |a, b| a.zip(b).map {|c, d| c / (scans_per_iteration - d) }}
+    percentage_misses = misses.map { |m| m.map { |a| a / scans_per_iteration }}
 
     File.open("#{filename}.data", 'w+') do |file|
       file.puts "#{mapsize}\t#{density}\t#{accuracy}\t#{iterations}"
@@ -95,11 +111,16 @@ logfiles.each do |filename|
         file.puts "#{s+1}\t#{d[:originalaps]/original_aps}\t#{average_error[s].join("\t")}\t#{misses[s].join("\t")}"
       end
     end
-    File.open("#{filename}.gnuplot", 'w+') do |file|
+    File.open("#{filename}.accuracy.gnuplot", 'w+') do |file|
       file.puts GNUPLOT_TEMPLATE
 
       file.puts "set xrange [1:#{iterations}]"
-      file.puts "set output '#{mapsize}-#{density}-#{accuracy}-#{iterations}.svg'"
+      file.puts "set output 'image/#{mapsize}-#{density}-#{accuracy}-#{iterations}-accuracy.svg'"
+
+
+      file.puts "set ylabel 'Average Localization Error'"
+      file.puts "set ytics 5"
+      file.puts "set yrange [10:#{average_error.flatten.max + 5}]"
 
       file.print "plot "
       algorithms.each do |a|
@@ -107,6 +128,32 @@ logfiles.each do |filename|
       end
       file.puts "'-' using 1:($2*100) title 'Remaining Access Points' axes x1y2 lt rgb 'black'"
       file.puts average_error.zip( Array.new(average_error.size) { |x| x+1 }).map { |a, b| a.map { |c| "#{b};#{c}" }}.transpose.map { |a| a.join("\n")}.join("\ne\n")
+      file.puts "e"
+      dataset.map { |e| e[:originalaps]/original_aps }.each_with_index do |d, s|
+        file.puts "#{s+1};#{d}"
+      end
+      file.puts "e"
+    end
+    File.open("#{filename}.misses.gnuplot", 'w+') do |file|
+      file.puts GNUPLOT_TEMPLATE
+
+      file.puts "set xrange [1:#{iterations}]"
+      file.puts "set output 'image/#{mapsize}-#{density}-#{accuracy}-#{iterations}-error.svg'"
+
+
+      file.puts "set ylabel 'Localization Miss Percentage'"
+      file.puts "set ytics 10"
+      file.puts "set autoscale y"
+      file.puts "set yrange [0:#{percentage_misses.flatten.max * 100 + 10}]"
+      file.puts "set format y '%g%%'"
+
+
+      file.print "plot "
+      algorithms.each do |a|
+        file.puts "'-' using 1:($2*100) title '#{a}' axes x1y1 lt rgb 'black', \\"
+      end
+      file.puts "'-' using 1:($2*100) title 'Remaining Access Points' axes x1y2 lt rgb 'black'"
+      file.puts percentage_misses.zip( Array.new(percentage_misses.size) { |x| x+1 }).map { |a, b| a.map { |c| "#{b};#{c}" }}.transpose.map { |a| a.join("\n")}.join("\ne\n")
       file.puts "e"
       dataset.map { |e| e[:originalaps]/original_aps }.each_with_index do |d, s|
         file.puts "#{s+1};#{d}"
